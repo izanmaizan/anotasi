@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# anotasi
 
-## Getting Started
+MVP alat anotasi gambar (mirip Roboflow) yang berjalan sepenuhnya di browser.
+Metadata anotasi disimpan di `localStorage`; **blob gambar disimpan di
+IndexedDB** agar tidak menabrak batas kuota localStorage saat memakai foto asli.
 
-First, run the development server:
+## Menjalankan
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install      # sudah dijalankan saat scaffold
+npm run dev      # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Fitur
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Upload gambar** (banyak sekaligus) — galeri di panel kiri, persisten.
+- **Tipe anotasi**:
+  - Bounding box (`B`) — drag untuk menggambar.
+  - Poligon / segmentasi (`P`) — klik tiap titik, klik titik awal atau `Enter` untuk menutup.
+  - Keypoint / landmark (`K`) — klik untuk menempatkan titik.
+  - Klasifikasi gambar — tag multi-label per gambar (panel kanan).
+- **Tool Pilih** (`V`) — pilih, geser, ubah ukuran (handle sudut bbox), tarik
+  vertex poligon, `Del`/`Backspace` untuk hapus.
+- **Zoom & pan** — scroll untuk zoom ke arah kursor, `Space`+drag (atau klik
+  tengah) untuk geser, tombol Fit untuk reset.
+- **Undo / Redo** — `Ctrl/Cmd+Z` dan `Ctrl/Cmd+Shift+Z`.
+- **Navigasi gambar** — tombol ‹ › atau `,` / `.` (atau panah kiri/kanan),
+  dengan indikator progres.
+- **Manajemen kelas** — tambah/ubah nama & warna; tekan `1`–`9` untuk memilih
+  kelas aktif dengan cepat.
+- **Export** — COCO JSON dan YOLO TXT (dinormalisasi), dengan pratinjau.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Pintasan keyboard
 
-## Learn More
+| Tombol | Fungsi |
+| --- | --- |
+| `V` `B` `P` `K` | Pilih / Box / Poligon / Keypoint |
+| `1`–`9` | Pilih kelas aktif |
+| `Space`+drag | Geser kanvas |
+| Scroll | Zoom |
+| `Ctrl/Cmd+Z` / `+Shift` | Undo / Redo |
+| `,` `.` atau ← → | Gambar sebelumnya / berikutnya |
+| `Del` / `Backspace` | Hapus anotasi terpilih |
+| `Esc` | Batalkan gambar / pilihan |
 
-To learn more about Next.js, take a look at the following resources:
+## Struktur
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+  app/page.tsx              layout utama + shortcut keyboard
+  lib/types.ts              model data (koordinat dinormalisasi 0..1)
+  lib/store.ts              zustand store + persist localStorage
+  lib/export.ts             konversi COCO / YOLO
+  components/
+    Toolbar.tsx             pemilih tool
+    ImageSidebar.tsx        upload & galeri gambar
+    AnnotationCanvas.tsx    canvas SVG interaktif (inti)
+    ClassPanel.tsx          manajemen kelas
+    ClassificationPanel.tsx tag klasifikasi gambar
+    AnnotationList.tsx      daftar anotasi
+    RightSidebar.tsx        gabungan panel kanan
+    ExportDialog.tsx        dialog export + pratinjau
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Catatan
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Ini prototipe UI. Untuk jadi seperti Roboflow penuh, langkah berikutnya:
+backend + database, autentikasi & multi-project, versioning dataset,
+augmentasi, dan integrasi training model.
